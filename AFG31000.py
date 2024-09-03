@@ -592,6 +592,8 @@ def program_trace(xdata,ydata,**kwargs):
   sample_rate = int(float(kwargs.get("sample_rate",2e9)))
   invert      = int(kwargs.get("invert",0))
   period      = float(kwargs.get("period",0))
+    
+  print("idle val: {}".format(idle_val))
 
   
   
@@ -617,6 +619,10 @@ def program_trace(xdata,ydata,**kwargs):
   target_y[target_y > 2.5] = 2.5
   target_y[target_y < -2.5] = -2.5
     
+  if(invert):
+    idle_val = -idle_val
+    target_y = -target_y
+    
   ymin = np.min(target_y)
   ymax = np.max(target_y)
   ypp  = ymax-ymin
@@ -627,6 +633,13 @@ def program_trace(xdata,ydata,**kwargs):
   target_y /= ypp
   target_y *= 2**14-1
   
+  # need to transform idle val as well!
+  # you are a dumb dumb!
+  idle_val -= ymin
+  idle_val /= ypp
+  idle_val *= 2**14-1
+   
+  
 
 
 
@@ -634,9 +647,6 @@ def program_trace(xdata,ydata,**kwargs):
   #idle_val = idle_val/.25
 
 
-  if(invert):
-    idle_val = -idle_val
-    target_y = -target_y
 
 
 
@@ -682,6 +692,7 @@ def program_trace(xdata,ydata,**kwargs):
     if value<0:
       value = 0
     data += bytearray(struct.pack(">H", value))
+    
     
   session.write("SOURCE{:d}:FUNCTION EMEM{:d}".format(trace,trace))
   session.write("SOURCE{:d}:FREQUENCY {:3.3e}".format(trace,freq))
